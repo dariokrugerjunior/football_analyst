@@ -1,0 +1,23 @@
+# Arquivo de configuração de variáveis de ambiente
+.env
+
+# Pasta de vídeos de entrada
+input_videos/
+
+# Pasta de vídeos de saídas
+output_videos/
+
+# Pasta de saídas de execução
+runs/
+
+# Ambiente virtual Python
+venv/
+
+football-players-detection-1/
+
+utils/__pycache__/
+
+models/
+
+yolov8x.pt
+
