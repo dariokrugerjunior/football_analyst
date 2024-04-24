@@ -20,4 +20,4 @@ utils/__pycache__/
 models/
 
 yolov8x.pt
-
+yolov5lu.pt
