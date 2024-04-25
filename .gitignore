@@ -15,7 +15,9 @@ venv/
 
 football-players-detection-1/
 
-utils/__pycache__/
+__pycache__/
+
+stubs/ 
 
 models/
 
