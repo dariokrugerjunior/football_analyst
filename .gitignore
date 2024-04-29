@@ -23,3 +23,5 @@ models/
 
 yolov8x.pt
 yolov5lu.pt
+
+.idea/
