@@ -94,25 +94,54 @@ class Tracker:
                 pickle.dump(tracks, f)
             
         return tracks
-    
-    def draw_ellipse(self, frame, bbox, color, track_id): 
+
+    def draw_ellipse(self, frame, bbox, color, track_id = None):
         print("track_id", track_id)
         y2 = int(bbox[3])
-        
+
         x_center, _ = get_center_of_bbox(bbox)
         width = get_bbox_width(bbox)
-        
-        cv2.ellipse(frame, 
-                    center=(x_center, y2), 
+
+        cv2.ellipse(frame,
+                    center=(x_center, y2),
                     axes=(int(width), int(0.35*width)),
                     angle=0.0,
-                    startAngle=45,
+                    startAngle=-45,
                     endAngle=235,
                     color=color,
                     thickness=2,
                     lineType=cv2.LINE_4
                     )
-        
+
+        rectangle_width = 40
+        rectangle_height = 20
+        x1_rect = x_center - rectangle_width//2
+        x2_rect = x_center + rectangle_width//2
+        y1_rect = y2 - rectangle_height//2
+        y2_rect = y2 + rectangle_height//2
+
+        if track_id is not None:
+            cv2.rectangle(frame,
+                          (x1_rect, y1_rect),
+                          (x2_rect, y2_rect),
+                          color,
+                          cv2.FILLED)
+
+            x1_text = x1_rect + 12
+            if track_id > 99:
+                x1_text -=10
+
+            cv2.putText(frame,
+                        f"{track_id}",
+                        (int(x1_text), int(y1_rect + 15)),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.6,
+                        (0, 0, 0),
+                        2
+                        )
+
+
+
         return frame
         
     
@@ -128,11 +157,11 @@ class Tracker:
             for track_id, player in player_dict.items():
                 frame = self.draw_ellipse(frame, player["bbox"], (0, 0, 255), track_id)
                 
-            for track_id, referee in referees_dict.items():
-                frame = self.draw_ellipse(frame, referee["bbox"], (0, 255, 0), track_id)
+            for _, referee in referees_dict.items():
+                frame = self.draw_ellipse(frame, referee["bbox"], (0, 255, 0))
             
-            for track_id, ball in ball_dict.items():
-                frame = self.draw_ellipse(frame, ball["bbox"], (255, 0, 0), track_id)
+            for _, ball in ball_dict.items():
+                frame = self.draw_ellipse(frame, ball["bbox"], (255, 0, 0))
                 
                 
                 
