@@ -14,32 +14,27 @@ class Tracker:
         self.tracker = sv.ByteTrack()
 
     def track(self, image):
-        # Tracks objects in the given image using the YOLO model
-        # Returns the result of object tracking using YOLO model
+        # Rastreia objetos na imagem usando o modelo YOLO
         return self.model(image)
 
     def detect_frames(self, frames):
-        # Detects objects in a list of frames
-        batch_size = 20  # Defines the batch size for processing frames
-        detections = []  # Initializes an empty list to store detections
+        # Detecta objetos em uma lista de frames
+        batch_size = 20  # Define o tamanho do lote para processamento de frames
+        detections = []  # Inicializa uma lista vazia para armazenar detecções
         for i in range(0, len(frames), batch_size):
-            # Processes frames in batches of batch_size
-            # Performs object detection on the batch of frames
             detections_batch = self.model.predict(
                 frames[i:i + batch_size], conf=0.1)
-            # Appends detections of the batch to the overall detections list
             detections += detections_batch
-        return detections  # Returns the list of detections for all frames
-
+        return detections  # Retorna a lista de detecções para todos os frames
 
     def get_object_tracking(self, frames, read_from_stub=False, stub_path=None):
-        
+        # Obtém o rastreamento de objetos para os frames fornecidos
         if read_from_stub and stub_path is not None and os.path.exists(stub_path):
+            # Se a flag read_from_stub for True e um caminho de stub for fornecido e o arquivo stub existir
             with open(stub_path, 'rb') as f:
-                return pickle.load(f)
-        
-        # Detect objects in each frame of the video
-        detections = self.detect_frames(frames)
+                return pickle.load(f)  # Carrega os dados do stub e retorna
+
+        detections = self.detect_frames(frames)  # Detecta objetos em cada frame
 
         tracks = {
             "player": [],
@@ -47,124 +42,138 @@ class Tracker:
             "ball": []
         }
 
-        # Iterate over each returned detection
         for frame_num, detection in enumerate(detections):
-            # Get the class names of the detected objects
-            class_name = detection.names
+            class_name = detection.names  # Obtém os nomes das classes detectadas
 
-            # Invert the class mapping to get a mapping of class ID to class name
-            class_name_inv = {v: k for k, v in class_name.items()}
+            class_name_inv = {v: k for k, v in class_name.items()}  # Inverte o mapeamento de classes
 
-            # Convert the detections to a specific format using sv.Detections.from_ultralytics
-            detection_supervion = sv.Detections.from_ultralytics(detection)
+            detection_supervision = sv.Detections.from_ultralytics(
+                detection)  # Converte as detecções para o formato supervision
 
-            # Check if any object is a "goalkeeper" and if so, change its class to "player"
-            for object_ind, class_id in enumerate(detection_supervion.class_id):
+            for object_ind, class_id in enumerate(detection_supervision.class_id):
+                # Verifica se algum objeto é um "goalkeeper" e, se for, muda sua classe para "player"
                 if class_name[class_id] == "goalkeeper":
-                    detection_supervion.class_id[object_ind] = class_name_inv["player"]
+                    detection_supervision.class_id[object_ind] = class_name_inv["player"]
 
-            # Update the tracking of the detected objects
             detection_with_tracking = self.tracker.update_with_detections(
-                detection_supervion)
+                detection_supervision)  # Atualiza o rastreamento dos objetos detectados
 
             tracks["player"].append({})
             tracks["referees"].append({})
             tracks["ball"].append({})
 
             for frame_detection in detection_with_tracking:
-                bbox = frame_detection[0].tolist()
-                class_id = frame_detection[3]
-                track_id = frame_detection[4]
+                bbox = frame_detection[0].tolist()  # Converte as coordenadas do retângulo delimitador para uma lista
+                class_id = frame_detection[3]  # Obtém o ID da classe do objeto detectado
+                track_id = frame_detection[4]  # Obtém o ID de rastreamento do objeto detectado
 
                 if class_id == class_name_inv["player"]:
+                    # Se a classe for um jogador, adiciona as informações do rastreamento ao dicionário de jogadores
                     tracks["player"][frame_num][track_id] = {"bbox": bbox}
 
                 if class_id == class_name_inv["referee"]:
+                    # Se a classe for um árbitro, adiciona as informações do rastreamento ao dicionário de árbitros
                     tracks["referees"][frame_num][track_id] = {"bbox": bbox}
 
-            for frame_detection in detection_supervion:
-                bbox = frame_detection[0].tolist()
+            for frame_detection in detection_supervision:
+                bbox = frame_detection[0].tolist()  # Converte as coordenadas do retângulo delimitador para uma lista
                 class_id = frame_detection[3]
 
                 if class_id == class_name_inv["ball"]:
+                    # Se a classe for uma bola, adiciona as informações do rastreamento ao dicionário de bola
                     tracks["ball"][frame_num][1] = {"bbox": bbox}
-                    
+
         if stub_path is not None:
+            # Se um caminho de stub for fornecido, salva os dados de rastreamento em um arquivo stub
             with open(stub_path, 'wb') as f:
                 pickle.dump(tracks, f)
-            
-        return tracks
 
-    def draw_ellipse(self, frame, bbox, color, track_id = None):
+        return tracks  # Retorna os dados de rastreamento
+
+    def draw_ellipse(self, frame, bbox, color, track_id=None):
+        # Exibe o ID do rastreamento, útil para debugging
         print("track_id", track_id)
+        # Coordenada y do canto inferior do retângulo delimitador (bbox)
         y2 = int(bbox[3])
 
+        # Obtém o centro x do bbox e ignora a coordenada y retornada
         x_center, _ = get_center_of_bbox(bbox)
+        # Calcula a largura do bbox
         width = get_bbox_width(bbox)
 
+        # Desenha uma elipse na imagem de entrada
         cv2.ellipse(frame,
-                    center=(x_center, y2),
-                    axes=(int(width), int(0.35*width)),
-                    angle=0.0,
-                    startAngle=-45,
-                    endAngle=235,
-                    color=color,
-                    thickness=2,
-                    lineType=cv2.LINE_4
+                    center=(x_center, y2),  # Define o centro da elipse
+                    axes=(int(width), int(0.35 * width)),  # Define os eixos maior e menor da elipse
+                    angle=0.0,  # Sem rotação
+                    startAngle=-45,  # Ângulo inicial para desenhar a elipse
+                    endAngle=235,  # Ângulo final para desenhar a elipse
+                    color=color,  # Cor da elipse
+                    thickness=2,  # Espessura da linha
+                    lineType=cv2.LINE_4  # Tipo de linha
                     )
 
+        # Define as dimensões do retângulo para o texto do ID
         rectangle_width = 40
         rectangle_height = 20
-        x1_rect = x_center - rectangle_width//2
-        x2_rect = x_center + rectangle_width//2
-        y1_rect = y2 - rectangle_height//2
-        y2_rect = y2 + rectangle_height//2
+        x1_rect = x_center - rectangle_width // 2  # Esquerda do retângulo
+        x2_rect = x_center + rectangle_width // 2  # Direita do retângulo
+        y1_rect = y2 - rectangle_height // 2  # Topo do retângulo
+        y2_rect = y2 + rectangle_height // 2  # Base do retângulo
 
         if track_id is not None:
+            # Se um ID de rastreamento foi fornecido, desenha um retângulo preenchido
             cv2.rectangle(frame,
-                          (x1_rect, y1_rect),
-                          (x2_rect, y2_rect),
-                          color,
-                          cv2.FILLED)
+                          (x1_rect, y1_rect),  # Canto superior esquerdo
+                          (x2_rect, y2_rect),  # Canto inferior direito
+                          color,  # Cor do retângulo
+                          cv2.FILLED)  # Preenchimento do retângulo
 
+            # Ajusta a posição x do texto baseado no tamanho do ID do rastreamento
             x1_text = x1_rect + 12
             if track_id > 99:
-                x1_text -=10
+                x1_text -= 10  # Ajusta para esquerda se o ID é de três dígitos
 
+            # Coloca o texto do ID de rastreamento dentro do retângulo
             cv2.putText(frame,
                         f"{track_id}",
-                        (int(x1_text), int(y1_rect + 15)),
-                        cv2.FONT_HERSHEY_SIMPLEX,
-                        0.6,
-                        (0, 0, 0),
-                        2
+                        (int(x1_text), int(y1_rect + 15)),  # Posição do texto
+                        cv2.FONT_HERSHEY_SIMPLEX,  # Fonte do texto
+                        0.6,  # Tamanho da fonte
+                        (0, 0, 0),  # Cor do texto (preto)
+                        2  # Espessura do texto
                         )
 
+        return frame  # Retorna o frame com as modificações aplicadas
 
-
-        return frame
-        
-    
-    def draw_annotions(self, video_frames, tracks):
+    def draw_annotations(self, video_frames, tracks):
+        # Inicializa uma lista para armazenar os quadros de vídeo com anotações
         output_video_frames = []
+
+        # Itera sobre cada quadro e seu índice do vídeo original
         for frame_num, frame in enumerate(video_frames):
+            # Faz uma cópia do quadro atual para evitar modificar o original
             frame = frame.copy()
-            
+
+            # Acessa os dicionários de rastreamentos dos jogadores, árbitros e bola no quadro atual
             player_dict = tracks["player"][frame_num]
             referees_dict = tracks["referees"][frame_num]
             ball_dict = tracks["ball"][frame_num]
-            
+
+            # Para cada jogador rastreado no quadro atual, desenha uma elipse azul
             for track_id, player in player_dict.items():
                 frame = self.draw_ellipse(frame, player["bbox"], (0, 0, 255), track_id)
-                
+
+            # Para cada árbitro rastreado, desenha uma elipse verde
             for _, referee in referees_dict.items():
                 frame = self.draw_ellipse(frame, referee["bbox"], (0, 255, 0))
-            
+
+            # Para a bola rastreada, desenha uma elipse vermelha
             for _, ball in ball_dict.items():
                 frame = self.draw_ellipse(frame, ball["bbox"], (255, 0, 0))
-                
-                
-                
+
+            # Adiciona o quadro anotado à lista de quadros de saída
             output_video_frames.append(frame)
-            
+
+        # Retorna a lista de quadros de vídeo com anotações
         return output_video_frames
