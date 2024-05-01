@@ -92,7 +92,7 @@ class Tracker:
 
     def draw_ellipse(self, frame, bbox, color, track_id=None):
         # Exibe o ID do rastreamento, útil para debugging
-        print("track_id", track_id)
+        # print("track_id", track_id)
         # Coordenada y do canto inferior do retângulo delimitador (bbox)
         y2 = int(bbox[3])
 
