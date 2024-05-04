@@ -18,6 +18,7 @@ class Tracker:
         return self.model(image)
 
     def add_position_to_tracks(self,tracks):
+        print("Adding position to tracks...")
         for object, object_tracks in tracks.items():
             for frame_num, track in enumerate(object_tracks):
                 for track_id, track_info in track.items():
@@ -27,6 +28,7 @@ class Tracker:
                     else:
                         position = get_foot_position(bbox)
                     tracks[object][frame_num][track_id]['position'] = position
+        print("Position added to tracks!")
 
     def detect_frames(self, frames):
         # Detecta objetos em uma lista de frames
@@ -39,6 +41,7 @@ class Tracker:
         return detections  # Retorna a lista de detecções para todos os frames
 
     def get_object_tracking(self, frames, read_from_stub=False, stub_path=None):
+        print("Getting object tracking...")
         # Obtém o rastreamento de objetos para os frames fornecidos
         if read_from_stub and stub_path is not None and os.path.exists(stub_path):
             # Se a flag read_from_stub for True e um caminho de stub for fornecido e o arquivo stub existir
@@ -74,6 +77,10 @@ class Tracker:
             tracks["ball"].append({})
 
             for frame_detection in detection_with_tracking:
+                if frame_detection is None:
+                    continue
+                if frame_detection[0] is None:
+                    continue
                 bbox = frame_detection[0].tolist()  # Converte as coordenadas do retângulo delimitador para uma lista
                 class_id = frame_detection[3]  # Obtém o ID da classe do objeto detectado
                 track_id = frame_detection[4]  # Obtém o ID de rastreamento do objeto detectado
@@ -98,7 +105,8 @@ class Tracker:
             # Se um caminho de stub for fornecido, salva os dados de rastreamento em um arquivo stub
             with open(stub_path, 'wb') as f:
                 pickle.dump(tracks, f)
-
+                
+        print("Object tracking obtained!")
         return tracks  # Retorna os dados de rastreamento
 
     def draw_ellipse(self, frame, bbox, color, track_id=None):
@@ -132,32 +140,33 @@ class Tracker:
         y1_rect = y2 - rectangle_height // 2  # Topo do retângulo
         y2_rect = y2 + rectangle_height // 2  # Base do retângulo
 
-        if track_id is not None:
-            # Se um ID de rastreamento foi fornecido, desenha um retângulo preenchido
-            cv2.rectangle(frame,
-                          (x1_rect, y1_rect),  # Canto superior esquerdo
-                          (x2_rect, y2_rect),  # Canto inferior direito
-                          color,  # Cor do retângulo
-                          cv2.FILLED)  # Preenchimento do retângulo
+        # if track_id is not None:
+        #     # Se um ID de rastreamento foi fornecido, desenha um retângulo preenchido
+        #     cv2.rectangle(frame,
+        #                   (x1_rect, y1_rect),  # Canto superior esquerdo
+        #                   (x2_rect, y2_rect),  # Canto inferior direito
+        #                   color,  # Cor do retângulo
+        #                   cv2.FILLED)  # Preenchimento do retângulo
 
-            # Ajusta a posição x do texto baseado no tamanho do ID do rastreamento
-            x1_text = x1_rect + 12
-            if track_id > 99:
-                x1_text -= 10  # Ajusta para esquerda se o ID é de três dígitos
+        #     # Ajusta a posição x do texto baseado no tamanho do ID do rastreamento
+        #     x1_text = x1_rect + 12
+        #     if track_id > 99:
+        #         x1_text -= 10  # Ajusta para esquerda se o ID é de três dígitos
 
-            # Coloca o texto do ID de rastreamento dentro do retângulo
-            cv2.putText(frame,
-                        f"{track_id}",
-                        (int(x1_text), int(y1_rect + 15)),  # Posição do texto
-                        cv2.FONT_HERSHEY_SIMPLEX,  # Fonte do texto
-                        0.6,  # Tamanho da fonte
-                        (0, 0, 0),  # Cor do texto (preto)
-                        2  # Espessura do texto
-                        )
+        #     # Coloca o texto do ID de rastreamento dentro do retângulo
+        #     cv2.putText(frame,
+        #                 f"{track_id}",
+        #                 (int(x1_text), int(y1_rect + 15)),  # Posição do texto
+        #                 cv2.FONT_HERSHEY_SIMPLEX,  # Fonte do texto
+        #                 0.6,  # Tamanho da fonte
+        #                 (0, 0, 0),  # Cor do texto (preto)
+        #                 2  # Espessura do texto
+        #                 )
 
         return frame  # Retorna o frame com as modificações aplicadas
 
     def draw_annotations(self, video_frames, tracks):
+        print("Drawing annotations...")
         # Inicializa uma lista para armazenar os quadros de vídeo com anotações
         output_video_frames = []
 
@@ -187,4 +196,5 @@ class Tracker:
             output_video_frames.append(frame)
 
         # Retorna a lista de quadros de vídeo com anotações
+        print("Annotations drawn!")
         return output_video_frames

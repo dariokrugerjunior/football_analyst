@@ -1,6 +1,7 @@
 import cv2
 
 def read_video(video_path):
+    print('Reading video from:', video_path)
     cap = cv2.VideoCapture(video_path)
     frames = []
     while True:
@@ -9,6 +10,7 @@ def read_video(video_path):
             break
         frames.append(frame)
     cap.release()
+    print('Video read successfully!')
     return frames
 
 def save_video(output_video_frames, output_video_path):

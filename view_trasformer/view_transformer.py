@@ -46,6 +46,7 @@ class ViewTransformer():
         return transformed_point.reshape(-1, 2)
 
     def add_transformed_position_to_tracks(self, tracks):
+        print("Adding transformed positions to tracks...")
         # Itera sobre cada objeto e suas trilhas dentro do dicionário de trilhas.
         for object, object_tracks in tracks.items():
             # Itera sobre cada quadro e sua respectiva trilha para o objeto.
@@ -64,3 +65,4 @@ class ViewTransformer():
                         position_transformed = position_transformed.squeeze().tolist()
                     # Atualiza a trilha com a nova posição transformada.
                     tracks[object][frame_num][track_id]['position_transformed'] = position_transformed
+        print("Transformed positions added to tracks!")

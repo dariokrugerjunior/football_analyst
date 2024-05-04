@@ -32,6 +32,7 @@ class CameraMovementEstimator():
         )
 
     def add_adjust_positions_to_tracks(self, tracks, camera_movement_per_frame):
+        print("Adding adjusted positions to tracks...")
         # Itera sobre cada objeto rastreado e suas trilhas no conjunto de dados.
         for object, object_tracks in tracks.items():
             # Enumera cada quadro e suas respectivas informações de rastreamento.
@@ -46,8 +47,10 @@ class CameraMovementEstimator():
                     position_adjusted = (position[0] - camera_movement[0], position[1] - camera_movement[1])
                     # Armazena a posição ajustada de volta na estrutura de dados de rastreamento.
                     tracks[object][frame_num][track_id]['position_adjusted'] = position_adjusted
+        print("Adjusted positions added to tracks!")
 
     def get_camera_movement(self, frames, read_from_stub=False, stub_path=None):
+        print("Getting camera movement...")
         # Verifica se deve ler o movimento da câmera de um arquivo stub.
         if read_from_stub and stub_path is not None and os.path.exists(stub_path):
             # Abre o arquivo stub e carrega os dados de movimento da câmera.
@@ -101,6 +104,7 @@ class CameraMovementEstimator():
                 pickle.dump(camera_movement, f)
 
         # Retorna a lista completa de movimentos da câmera.
+        print("Camera movement calculated!")
         return camera_movement
 
     def draw_camera_movement(self, frames, camera_movement_per_frame):

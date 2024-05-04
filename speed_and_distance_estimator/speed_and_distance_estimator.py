@@ -9,6 +9,7 @@ class SpeedAndDistanceEstimator():
         self.frame_rate = 24
 
     def add_speed_and_distance_to_tracks(self, tracks):
+        print("Adding speed and distance to tracks...")
         # Dicionário para armazenar a distância total percorrida por cada objeto e trilha.
         total_distance = {}
 
@@ -60,8 +61,10 @@ class SpeedAndDistanceEstimator():
                             continue
                         tracks[object][frame_num_batch][track_id]['speed'] = speed_km_per_hour
                         tracks[object][frame_num_batch][track_id]['distance'] = total_distance[object][track_id]
+        print("Speed and distance added to tracks!")
 
     def draw_speed_and_distance(self, frames, tracks):
+        print("Drawing speed and distance...")
         # Lista para armazenar os quadros com os desenhos de velocidade e distância.
         output_frames = []
         # Itera sobre cada quadro e o respectivo número do quadro.
@@ -101,6 +104,7 @@ class SpeedAndDistanceEstimator():
             output_frames.append(frame)
 
         # Retorna a lista de quadros com os desenhos de velocidade e distância.
+        print("Speed and distance drawn!")
         return output_frames
 
 
