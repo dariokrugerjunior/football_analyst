@@ -6,6 +6,8 @@
 
 ##  
 
+<img src="/example/ex.gif">
+
 ## Pre requisites
 
 Antes de iniciar, você precisará das seguintes ferramentas:
