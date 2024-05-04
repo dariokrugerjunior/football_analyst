@@ -4,7 +4,7 @@ import cv2
 
 class ViewTransformer():
     def __init__(self):
-        # Definição das dimensões da quadra de basquete.
+        # Definição das dimensões.
         court_width = 68
         court_length = 23.32
 
@@ -14,7 +14,7 @@ class ViewTransformer():
                                         [910, 260],
                                         [1640, 915]])
 
-        # Definição dos vértices correspondentes na quadra real.
+        # Definição dos vértices correspondentes de um campo real.
         self.target_vertices = np.array([
             [0, court_width],
             [0, 0],

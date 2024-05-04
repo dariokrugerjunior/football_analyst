@@ -24,16 +24,21 @@ pip install -r requirements.txt
 ## Project structure
 ```bash
 football_analyts/
+├── camera_movement_estimator/   # Responsaveis pela ajustes de posicionamento e movimentação da camera
 ├── input_videos/   # Coloque aqui os vídeos de entrada para análise
 ├── models/         # Pasta para armazenar modelos treinados, incluindo best.pt
 ├── output_videos/  # Vídeos processados são salvos nesta pasta
 ├── runs/           # Resultados de execuções de treino/teste
+├── speed_and_distance_estimator/   # Responsaveis pela estimativa de velocidade e distancia
 ├── stubs/          # Stubs para tipagem estática e linting
 ├── training/       # Scripts e notebooks de treinamento de modelo
 ├── utils/          # Utilitários diversos para apoio às funcionalidades do projeto
+├── view_trasformer/   # Responsaveis pelo dimensionamento do campo
 ````
 
 ## Video Processing
+Importante que para fazer o treinamento a propriedade read_from_stub esteja como False
+
 Execute o script principal para iniciar a análise dos vídeos:
 ```bash
 python main.py
